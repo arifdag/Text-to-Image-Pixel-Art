@@ -1,0 +1,20 @@
+sources:
+  - id: pixelparti_seed
+    local_path: /content/data/pixelparti_seed/images
+    captions_path: /content/data/pixelparti_seed/captions.jsonl
+    captions_key_field: file_name
+    captions_text_field: text
+    license: CC0-1.0
+    attribution: nerijs/pixelparti-128-v0.1
+    notes: Smoke-run subset from auto-downloaded PixelParti export.
+    max_files: 256
+  - id: pixel_character
+    local_path: /content/data/pixel_character/images
+    captions_path: /content/data/pixel_character/captions.jsonl
+    captions_key_field: file_name
+    captions_text_field: text
+    license: Apache-2.0
+    attribution: Limbicnation/pixel-art-character
+    notes: Optional smoke subset from character dataset export.
+    max_files: 128
+
