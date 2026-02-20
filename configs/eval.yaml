@@ -1,0 +1,15 @@
+base_model: stabilityai/stable-diffusion-xl-base-1.0
+vae_model: madebyollin/sdxl-vae-fp16-fix
+lora_path: /content/drive/MyDrive/pixelart-lora-output
+prompts_file: configs/prompts_v1.json
+output_dir: artifacts/eval
+
+dtype: bf16
+device: cuda
+width: 1024
+height: 1024
+num_inference_steps: 30
+guidance_scale: 7.0
+downscale_factor: 8
+lora_scale: 0.9
+

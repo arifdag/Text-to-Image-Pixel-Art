@@ -1,0 +1,14 @@
+sources:
+  - id: pixelparti_seed
+    local_path: /content/data/pixelparti/images
+    license: CC0-1.0
+    attribution: nerijs/pixelparti-128-v0.1
+    notes: Synthetic prompt-paired pixel-art starter dataset.
+    max_files: 3000
+  - id: local_assets
+    local_path: /content/data/open_pixel_assets
+    license: CC-BY-4.0
+    attribution: Replace with actual creator/source in DATA_SOURCES.md.
+    notes: Real pixel-art assets with attribution.
+    max_files: 2000
+

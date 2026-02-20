@@ -1,0 +1,11 @@
+numpy>=1.24
+Pillow>=10.0
+PyYAML>=6.0
+tqdm>=4.66
+torch>=2.1
+diffusers>=0.31
+accelerate>=0.34
+transformers>=4.44
+peft>=0.12
+imagehash>=4.3
+

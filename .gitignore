@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Data and artifacts
+data/raw/**
+data/clean/**
+data/train/**
+artifacts/**
+!data/raw/.gitkeep
+!data/clean/.gitkeep
+!data/train/.gitkeep
+!artifacts/.gitkeep
+
+# Notebook checkpoints
+.ipynb_checkpoints/

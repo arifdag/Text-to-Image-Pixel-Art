@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixelart-generator"
+version = "0.1.0"
+description = "Colab-first SDXL LoRA pipeline for text-to-image pixel art."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "Pillow>=10.0",
+  "PyYAML>=6.0",
+  "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+train = [
+  "torch>=2.1",
+  "diffusers>=0.31",
+  "accelerate>=0.34",
+  "transformers>=4.44",
+  "peft>=0.12",
+  "bitsandbytes>=0.43",
+  "xformers>=0.0.27; platform_system != 'Windows'",
+  "imagehash>=4.3",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+pixelart-ingest = "pixelart.data_ingest:main"
+pixelart-clean = "pixelart.data_clean:main"
+pixelart-caption = "pixelart.caption:main"
+pixelart-train = "pixelart.train:main"
+pixelart-eval = "pixelart.eval:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+

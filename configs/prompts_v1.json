@@ -1,0 +1,33 @@
+[
+  {
+    "id": "character_knight",
+    "prompt": "pixel art, female knight with blue cape, full body sprite, idle pose, simple background, 16-bit style",
+    "negative_prompt": "3d render, realistic, smooth shading, gradient, anti-aliasing, blurry",
+    "seed": 101
+  },
+  {
+    "id": "character_mage",
+    "prompt": "pixel art, young mage with pink hat, full body sprite, holding staff, simple background, limited palette",
+    "negative_prompt": "realistic skin, 3d, smooth gradient, painterly, anti-aliasing",
+    "seed": 202
+  },
+  {
+    "id": "enemy_slime",
+    "prompt": "pixel art, cute green slime monster, game enemy sprite, front view, crisp edges, simple background",
+    "negative_prompt": "photo, realistic, smooth shading, high detail skin texture, anti-aliasing",
+    "seed": 303
+  },
+  {
+    "id": "item_potion",
+    "prompt": "pixel art, health potion icon, red liquid in glass bottle, RPG inventory icon, transparent background style",
+    "negative_prompt": "photorealistic, smooth glass reflections, 3d render, blurry",
+    "seed": 404
+  },
+  {
+    "id": "scene_village",
+    "prompt": "pixel art, small village street at night, warm lantern light, retro RPG scene, 16-bit",
+    "negative_prompt": "realistic, smooth gradients, modern photography, anti-aliasing, blurry",
+    "seed": 505
+  }
+]
+
