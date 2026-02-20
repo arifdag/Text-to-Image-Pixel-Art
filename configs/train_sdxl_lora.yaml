@@ -27,9 +27,8 @@ max_grad_norm: 1.0
 
 gradient_checkpointing: true
 allow_tf32: true
-enable_xformers_memory_efficient_attention: true
+enable_xformers_memory_efficient_attention: false
 train_text_encoder: false
 use_8bit_adam: false
 
 resume_from_checkpoint: latest
-
