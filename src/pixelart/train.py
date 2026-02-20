@@ -131,6 +131,27 @@ def write_manifest(output_dir: Path, config: dict[str, Any], command: list[str])
 def main() -> None:
     args = parse_args()
     config = load_config(args.config)
+    train_data_dir = Path(str(config.get("train_data_dir", "")))
+    if not train_data_dir.exists():
+        raise FileNotFoundError(
+            f"train_data_dir does not exist: {train_data_dir}. "
+            "In Colab, this is usually /content/Text-to-Image-Pixel-Art/data/train."
+        )
+
+    train_script = str(config.get("train_script", ""))
+    if "/diffusers/examples/" in train_script:
+        try:
+            import diffusers
+
+            version = str(getattr(diffusers, "__version__", "unknown"))
+        except Exception:  # pragma: no cover - environment-dependent import path
+            version = "unknown"
+        if "dev" not in version:
+            raise RuntimeError(
+                "Diffusers example script requires a source install, but installed version is "
+                f"{version}. Run: pip uninstall -y diffusers && pip install -e /content/diffusers"
+            )
+
     command = build_command(config)
     output_dir = Path(str(config["output_dir"]))
     print("Training command:")

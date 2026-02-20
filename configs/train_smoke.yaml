@@ -2,7 +2,7 @@ train_script: /content/diffusers/examples/text_to_image/train_text_to_image_lora
 
 pretrained_model_name_or_path: stabilityai/stable-diffusion-xl-base-1.0
 pretrained_vae_model_name_or_path: madebyollin/sdxl-vae-fp16-fix
-train_data_dir: /content/project/data/train
+train_data_dir: /content/Text-to-Image-Pixel-Art/data/train
 output_dir: /content/drive/MyDrive/pixelart-lora-output-smoke
 
 resolution: 1024
