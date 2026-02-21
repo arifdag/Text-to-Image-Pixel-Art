@@ -7,8 +7,8 @@ output_dir: /content/drive/MyDrive/pixelart-lora-output-corrective-ckpt8000
 
 resolution: 1024
 image_interpolation_mode: nearest
-train_batch_size: 2
-gradient_accumulation_steps: 8
+train_batch_size: 4
+gradient_accumulation_steps: 4
 learning_rate: 0.00003
 max_train_steps: 9500
 checkpointing_steps: 250
@@ -22,10 +22,10 @@ num_validation_images: 4
 mixed_precision: bf16
 lr_scheduler: constant
 lr_warmup_steps: 0
-dataloader_num_workers: 4
+dataloader_num_workers: 8
 max_grad_norm: 1.0
 
-gradient_checkpointing: true
+gradient_checkpointing: false
 allow_tf32: true
 enable_xformers_memory_efficient_attention: false
 train_text_encoder: false

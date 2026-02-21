@@ -55,6 +55,13 @@ def parse_args() -> argparse.Namespace:
         default=0.0,
         help="Cap upscaling factor in pad mode (0 means no cap).",
     )
+    parser.add_argument(
+        "--pad-background-mode",
+        type=str,
+        choices=["black", "white", "auto"],
+        default="white",
+        help="Background fill used for transparent pixels during resize.",
+    )
     parser.add_argument("--max-source-dimension", type=int, default=0)
     parser.add_argument("--max-aspect-ratio", type=float, default=0.0)
     parser.add_argument(
@@ -80,12 +87,51 @@ def center_crop_resize_nearest(image: Image.Image, resolution: int) -> Image.Ima
     return cropped.resize((resolution, resolution), RESAMPLE_NEAREST)
 
 
+def choose_background_color(image: Image.Image, mode: str) -> tuple[int, int, int]:
+    if mode == "black":
+        return (0, 0, 0)
+    if mode == "white":
+        return (255, 255, 255)
+    if mode != "auto":
+        raise ValueError(f"Unsupported pad_background_mode: {mode}")
+
+    rgba = np.asarray(image.convert("RGBA"), dtype=np.uint8)
+    alpha = rgba[:, :, 3]
+    opaque = alpha > 0
+    if not np.any(opaque):
+        return (255, 255, 255)
+
+    opaque_rgb = rgba[:, :, :3][opaque]
+    mean_rgb = opaque_rgb.mean(axis=0)
+    # Keep auto backgrounds bright to avoid learning dark canvas bias.
+    blended = 0.65 * 255.0 + 0.35 * mean_rgb
+    blended = np.clip(blended, 0, 255).astype(np.uint8)
+    return (int(blended[0]), int(blended[1]), int(blended[2]))
+
+
+def convert_to_rgb_with_background(
+    image: Image.Image,
+    pad_background_mode: str,
+) -> Image.Image:
+    rgba = image.convert("RGBA")
+    alpha = np.asarray(rgba, dtype=np.uint8)[:, :, 3]
+    if np.all(alpha == 255):
+        return rgba.convert("RGB")
+
+    bg = choose_background_color(rgba, pad_background_mode)
+    background = Image.new("RGBA", rgba.size, bg + (255,))
+    composited = Image.alpha_composite(background, rgba)
+    return composited.convert("RGB")
+
+
 def fit_pad_resize_nearest(
     image: Image.Image,
     resolution: int,
     max_upscale_factor: float = 0.0,
+    pad_background_mode: str = "white",
 ) -> Image.Image:
-    rgb = image.convert("RGB")
+    pad_color = choose_background_color(image, pad_background_mode)
+    rgb = convert_to_rgb_with_background(image, pad_background_mode=pad_background_mode)
     width, height = rgb.size
     if width <= 0 or height <= 0:
         raise ValueError("Image has invalid dimensions.")
@@ -97,7 +143,7 @@ def fit_pad_resize_nearest(
     scaled_h = max(1, int(round(height * scale)))
 
     resized = rgb.resize((scaled_w, scaled_h), RESAMPLE_NEAREST)
-    canvas = Image.new("RGB", (resolution, resolution), (0, 0, 0))
+    canvas = Image.new("RGB", (resolution, resolution), pad_color)
     left = (resolution - scaled_w) // 2
     top = (resolution - scaled_h) // 2
     canvas.paste(resized, (left, top))
@@ -109,11 +155,18 @@ def resize_image(
     resolution: int,
     resize_mode: str,
     max_upscale_factor: float = 0.0,
+    pad_background_mode: str = "white",
 ) -> Image.Image:
     if resize_mode == "crop":
-        return center_crop_resize_nearest(image, resolution)
+        rgb = convert_to_rgb_with_background(image, pad_background_mode=pad_background_mode)
+        return center_crop_resize_nearest(rgb, resolution)
     if resize_mode == "pad":
-        return fit_pad_resize_nearest(image, resolution, max_upscale_factor=max_upscale_factor)
+        return fit_pad_resize_nearest(
+            image,
+            resolution,
+            max_upscale_factor=max_upscale_factor,
+            pad_background_mode=pad_background_mode,
+        )
     raise ValueError(f"Unsupported resize_mode: {resize_mode}")
 
 
@@ -163,6 +216,7 @@ def clean_dataset(
     edge_softness_threshold: float,
     resize_mode: str = "crop",
     max_upscale_factor: float = 0.0,
+    pad_background_mode: str = "white",
     max_source_dimension: int = 0,
     max_aspect_ratio: float = 0.0,
     reject_name_patterns: list[str] | None = None,
@@ -247,6 +301,7 @@ def clean_dataset(
                     resolution,
                     resize_mode,
                     max_upscale_factor=max_upscale_factor,
+                    pad_background_mode=pad_background_mode,
                 )
                 p_hash = perceptual_hash(cleaned)
         except Exception as exc:  # pragma: no cover - image decoding edge cases
@@ -307,6 +362,7 @@ def main() -> None:
         phash_threshold=args.phash_threshold,
         edge_softness_threshold=args.edge_softness_threshold,
         max_upscale_factor=args.max_upscale_factor,
+        pad_background_mode=args.pad_background_mode,
         max_source_dimension=args.max_source_dimension,
         max_aspect_ratio=args.max_aspect_ratio,
         reject_name_patterns=parse_name_patterns(args.reject_name_patterns),

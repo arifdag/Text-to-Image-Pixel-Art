@@ -111,8 +111,8 @@ def test_clean_dataset_pad_resize_preserves_full_subject(tmp_path: Path) -> None
     kept_rows = read_jsonl(tmp_path / "index3.jsonl")
     cleaned = Image.open(kept_rows[0]["file_path"]).convert("RGB")
     arr = np.asarray(cleaned)
-    # With pad mode, side bars remain black and center keeps source pixels.
-    assert tuple(arr[16, 0]) == (0, 0, 0)
+    # With pad mode, side bars use configured background (white by default).
+    assert tuple(arr[16, 0]) == (255, 255, 255)
     assert tuple(arr[16, 16]) == (255, 255, 255)
 
 
@@ -139,4 +139,32 @@ def test_clean_dataset_pad_resize_respects_max_upscale_factor(tmp_path: Path) ->
     arr = np.asarray(cleaned)
     # 16x16 scaled by 8x => 128x128 centered in 1024 canvas.
     assert tuple(arr[512, 512]) == (255, 255, 255)
-    assert tuple(arr[512, 447]) == (0, 0, 0)
+    assert tuple(arr[512, 447]) == (255, 255, 255)
+
+
+def test_clean_dataset_pad_resize_transparent_pixels_use_white_background(tmp_path: Path) -> None:
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for x in range(4, 12):
+        for y in range(4, 12):
+            img.putpixel((x, y), (255, 0, 0, 255))
+    source_path = tmp_path / "transparent.png"
+    img.save(source_path)
+
+    result = clean_dataset(
+        records=[{"file_path": source_path.as_posix(), "source": "x", "license": "CC0-1.0"}],
+        output_dir=tmp_path / "clean_images5",
+        index_out=tmp_path / "index5.jsonl",
+        rejects_out=tmp_path / "rejects5.jsonl",
+        resolution=64,
+        resize_mode="pad",
+        max_upscale_factor=2.0,
+        pad_background_mode="white",
+        phash_threshold=0,
+        edge_softness_threshold=1.0,
+    )
+    assert result.kept == 1
+
+    kept_rows = read_jsonl(tmp_path / "index5.jsonl")
+    cleaned = Image.open(kept_rows[0]["file_path"]).convert("RGB")
+    arr = np.asarray(cleaned)
+    assert tuple(arr[0, 0]) == (255, 255, 255)
