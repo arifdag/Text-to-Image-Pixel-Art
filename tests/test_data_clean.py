@@ -114,3 +114,29 @@ def test_clean_dataset_pad_resize_preserves_full_subject(tmp_path: Path) -> None
     # With pad mode, side bars remain black and center keeps source pixels.
     assert tuple(arr[16, 0]) == (0, 0, 0)
     assert tuple(arr[16, 16]) == (255, 255, 255)
+
+
+def test_clean_dataset_pad_resize_respects_max_upscale_factor(tmp_path: Path) -> None:
+    tiny = Image.new("RGB", (16, 16), (255, 255, 255))
+    source_path = tmp_path / "tiny.png"
+    tiny.save(source_path)
+
+    result = clean_dataset(
+        records=[{"file_path": source_path.as_posix(), "source": "x", "license": "CC0-1.0"}],
+        output_dir=tmp_path / "clean_images4",
+        index_out=tmp_path / "index4.jsonl",
+        rejects_out=tmp_path / "rejects4.jsonl",
+        resolution=1024,
+        resize_mode="pad",
+        max_upscale_factor=8.0,
+        phash_threshold=0,
+        edge_softness_threshold=1.0,
+    )
+    assert result.kept == 1
+
+    kept_rows = read_jsonl(tmp_path / "index4.jsonl")
+    cleaned = Image.open(kept_rows[0]["file_path"]).convert("RGB")
+    arr = np.asarray(cleaned)
+    # 16x16 scaled by 8x => 128x128 centered in 1024 canvas.
+    assert tuple(arr[512, 512]) == (255, 255, 255)
+    assert tuple(arr[512, 447]) == (0, 0, 0)

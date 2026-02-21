@@ -49,6 +49,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--phash-threshold", type=int, default=6)
     parser.add_argument("--edge-softness-threshold", type=float, default=0.55)
+    parser.add_argument(
+        "--max-upscale-factor",
+        type=float,
+        default=0.0,
+        help="Cap upscaling factor in pad mode (0 means no cap).",
+    )
     parser.add_argument("--max-source-dimension", type=int, default=0)
     parser.add_argument("--max-aspect-ratio", type=float, default=0.0)
     parser.add_argument(
@@ -74,13 +80,19 @@ def center_crop_resize_nearest(image: Image.Image, resolution: int) -> Image.Ima
     return cropped.resize((resolution, resolution), RESAMPLE_NEAREST)
 
 
-def fit_pad_resize_nearest(image: Image.Image, resolution: int) -> Image.Image:
+def fit_pad_resize_nearest(
+    image: Image.Image,
+    resolution: int,
+    max_upscale_factor: float = 0.0,
+) -> Image.Image:
     rgb = image.convert("RGB")
     width, height = rgb.size
     if width <= 0 or height <= 0:
         raise ValueError("Image has invalid dimensions.")
 
     scale = float(resolution) / float(max(width, height))
+    if max_upscale_factor > 0:
+        scale = min(scale, max_upscale_factor)
     scaled_w = max(1, int(round(width * scale)))
     scaled_h = max(1, int(round(height * scale)))
 
@@ -92,11 +104,16 @@ def fit_pad_resize_nearest(image: Image.Image, resolution: int) -> Image.Image:
     return canvas
 
 
-def resize_image(image: Image.Image, resolution: int, resize_mode: str) -> Image.Image:
+def resize_image(
+    image: Image.Image,
+    resolution: int,
+    resize_mode: str,
+    max_upscale_factor: float = 0.0,
+) -> Image.Image:
     if resize_mode == "crop":
         return center_crop_resize_nearest(image, resolution)
     if resize_mode == "pad":
-        return fit_pad_resize_nearest(image, resolution)
+        return fit_pad_resize_nearest(image, resolution, max_upscale_factor=max_upscale_factor)
     raise ValueError(f"Unsupported resize_mode: {resize_mode}")
 
 
@@ -145,6 +162,7 @@ def clean_dataset(
     phash_threshold: int,
     edge_softness_threshold: float,
     resize_mode: str = "crop",
+    max_upscale_factor: float = 0.0,
     max_source_dimension: int = 0,
     max_aspect_ratio: float = 0.0,
     reject_name_patterns: list[str] | None = None,
@@ -224,7 +242,12 @@ def clean_dataset(
                     )
                     continue
 
-                cleaned = resize_image(img, resolution, resize_mode)
+                cleaned = resize_image(
+                    img,
+                    resolution,
+                    resize_mode,
+                    max_upscale_factor=max_upscale_factor,
+                )
                 p_hash = perceptual_hash(cleaned)
         except Exception as exc:  # pragma: no cover - image decoding edge cases
             rejected_rows.append(
@@ -283,6 +306,7 @@ def main() -> None:
         resize_mode=args.resize_mode,
         phash_threshold=args.phash_threshold,
         edge_softness_threshold=args.edge_softness_threshold,
+        max_upscale_factor=args.max_upscale_factor,
         max_source_dimension=args.max_source_dimension,
         max_aspect_ratio=args.max_aspect_ratio,
         reject_name_patterns=parse_name_patterns(args.reject_name_patterns),
