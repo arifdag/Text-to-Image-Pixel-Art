@@ -2,7 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from pixelart.train import build_command, find_latest_checkpoint, prepare_resume_checkpoint
+from pixelart.train import (
+    build_command,
+    find_latest_checkpoint,
+    prepare_resume_checkpoint,
+    validate_resume_vs_max_steps,
+)
 
 
 def test_find_latest_checkpoint(tmp_path: Path) -> None:
@@ -57,3 +62,13 @@ def test_prepare_resume_checkpoint_raises_for_missing_path(tmp_path: Path) -> No
 
     with pytest.raises(FileNotFoundError):
         prepare_resume_checkpoint(config)
+
+
+def test_validate_resume_vs_max_steps_raises_when_target_not_above_resume() -> None:
+    config = {
+        "resume_from_checkpoint": "checkpoint-8000",
+        "max_train_steps": 1500,
+    }
+
+    with pytest.raises(ValueError, match="max_train_steps"):
+        validate_resume_vs_max_steps(config)

@@ -89,3 +89,28 @@ def test_clean_dataset_rejects_large_source_dimensions(tmp_path: Path) -> None:
     reject_rows = read_jsonl(tmp_path / "rejects2.jsonl")
     assert result.kept == 0
     assert reject_rows[0]["reason"] == "source_too_large"
+
+
+def test_clean_dataset_pad_resize_preserves_full_subject(tmp_path: Path) -> None:
+    tall = Image.new("RGB", (16, 32), (255, 255, 255))
+    source_path = tmp_path / "tall.png"
+    tall.save(source_path)
+
+    result = clean_dataset(
+        records=[{"file_path": source_path.as_posix(), "source": "x", "license": "CC0-1.0"}],
+        output_dir=tmp_path / "clean_images3",
+        index_out=tmp_path / "index3.jsonl",
+        rejects_out=tmp_path / "rejects3.jsonl",
+        resolution=32,
+        resize_mode="pad",
+        phash_threshold=0,
+        edge_softness_threshold=1.0,
+    )
+    assert result.kept == 1
+
+    kept_rows = read_jsonl(tmp_path / "index3.jsonl")
+    cleaned = Image.open(kept_rows[0]["file_path"]).convert("RGB")
+    arr = np.asarray(cleaned)
+    # With pad mode, side bars remain black and center keeps source pixels.
+    assert tuple(arr[16, 0]) == (0, 0, 0)
+    assert tuple(arr[16, 16]) == (255, 255, 255)

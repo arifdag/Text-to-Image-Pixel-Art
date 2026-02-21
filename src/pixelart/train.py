@@ -126,6 +126,38 @@ def prepare_resume_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
     return updated
 
 
+def extract_resume_step(config: dict[str, Any]) -> int | None:
+    resume_raw = str(config.get("resume_from_checkpoint", "")).strip()
+    if not resume_raw:
+        return None
+    resume_name = Path(resume_raw).name
+    step = checkpoint_step(Path(resume_name))
+    return step if step >= 0 else None
+
+
+def validate_resume_vs_max_steps(config: dict[str, Any]) -> None:
+    resume_step = extract_resume_step(config)
+    if resume_step is None:
+        return
+
+    max_steps_raw = config.get("max_train_steps")
+    if max_steps_raw in (None, ""):
+        return
+
+    try:
+        max_steps = int(max_steps_raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"max_train_steps must be an integer, got: {max_steps_raw!r}") from exc
+
+    if max_steps <= resume_step:
+        suggested = resume_step + 1500
+        raise ValueError(
+            "Invalid training target for resumed run: "
+            f"resume checkpoint is step {resume_step}, but max_train_steps is {max_steps}. "
+            f"Set max_train_steps > {resume_step} (for +1500 steps, use {suggested})."
+        )
+
+
 def build_command(config: dict[str, Any]) -> list[str]:
     train_script = str(config.get("train_script", "train_text_to_image_lora_sdxl.py"))
     command = ["accelerate", "launch", train_script]
@@ -172,6 +204,7 @@ def main() -> None:
     args = parse_args()
     config = load_config(args.config)
     config = prepare_resume_checkpoint(config)
+    validate_resume_vs_max_steps(config)
     train_data_dir = Path(str(config.get("train_data_dir", "")))
     if not train_data_dir.exists():
         raise FileNotFoundError(

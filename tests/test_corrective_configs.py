@@ -42,7 +42,8 @@ def test_train_corrective_config_constraints() -> None:
 
     assert corrective["train_data_dir"].endswith("data/train_corrective")
     assert "checkpoint-8000" in str(corrective["resume_from_checkpoint"])
-    assert 1000 <= int(corrective["max_train_steps"]) <= 2000
+    assert int(corrective["max_train_steps"]) > 8000
+    assert int(corrective["max_train_steps"]) <= 12000
     assert float(corrective["learning_rate"]) < float(baseline["learning_rate"])
     assert corrective["output_dir"] != baseline["output_dir"]
 

@@ -40,6 +40,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--index-out", type=Path, default=Path("data/clean/index.jsonl"))
     parser.add_argument("--rejects-out", type=Path, default=Path("data/clean/rejects.jsonl"))
     parser.add_argument("--resolution", type=int, default=1024)
+    parser.add_argument(
+        "--resize-mode",
+        type=str,
+        choices=["crop", "pad"],
+        default="crop",
+        help="Square-resize mode: crop (center crop then upscale) or pad (fit with letterbox).",
+    )
     parser.add_argument("--phash-threshold", type=int, default=6)
     parser.add_argument("--edge-softness-threshold", type=float, default=0.55)
     parser.add_argument("--max-source-dimension", type=int, default=0)
@@ -65,6 +72,32 @@ def center_crop_resize_nearest(image: Image.Image, resolution: int) -> Image.Ima
     top = (height - side) // 2
     cropped = rgb.crop((left, top, left + side, top + side))
     return cropped.resize((resolution, resolution), RESAMPLE_NEAREST)
+
+
+def fit_pad_resize_nearest(image: Image.Image, resolution: int) -> Image.Image:
+    rgb = image.convert("RGB")
+    width, height = rgb.size
+    if width <= 0 or height <= 0:
+        raise ValueError("Image has invalid dimensions.")
+
+    scale = float(resolution) / float(max(width, height))
+    scaled_w = max(1, int(round(width * scale)))
+    scaled_h = max(1, int(round(height * scale)))
+
+    resized = rgb.resize((scaled_w, scaled_h), RESAMPLE_NEAREST)
+    canvas = Image.new("RGB", (resolution, resolution), (0, 0, 0))
+    left = (resolution - scaled_w) // 2
+    top = (resolution - scaled_h) // 2
+    canvas.paste(resized, (left, top))
+    return canvas
+
+
+def resize_image(image: Image.Image, resolution: int, resize_mode: str) -> Image.Image:
+    if resize_mode == "crop":
+        return center_crop_resize_nearest(image, resolution)
+    if resize_mode == "pad":
+        return fit_pad_resize_nearest(image, resolution)
+    raise ValueError(f"Unsupported resize_mode: {resize_mode}")
 
 
 def edge_softness_score(image: Image.Image) -> float:
@@ -111,6 +144,7 @@ def clean_dataset(
     resolution: int,
     phash_threshold: int,
     edge_softness_threshold: float,
+    resize_mode: str = "crop",
     max_source_dimension: int = 0,
     max_aspect_ratio: float = 0.0,
     reject_name_patterns: list[str] | None = None,
@@ -190,7 +224,7 @@ def clean_dataset(
                     )
                     continue
 
-                cleaned = center_crop_resize_nearest(img, resolution)
+                cleaned = resize_image(img, resolution, resize_mode)
                 p_hash = perceptual_hash(cleaned)
         except Exception as exc:  # pragma: no cover - image decoding edge cases
             rejected_rows.append(
@@ -246,6 +280,7 @@ def main() -> None:
         index_out=args.index_out,
         rejects_out=args.rejects_out,
         resolution=args.resolution,
+        resize_mode=args.resize_mode,
         phash_threshold=args.phash_threshold,
         edge_softness_threshold=args.edge_softness_threshold,
         max_source_dimension=args.max_source_dimension,
