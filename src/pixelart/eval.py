@@ -22,6 +22,7 @@ ALLOWED_PROMPT_CATEGORIES = {
     "composition_clarity",
 }
 ALLOWED_EVAL_MODES = {"speed", "memory_safe"}
+ALLOWED_DTYPE_NAMES = {"bf16", "fp16", "fp32"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -148,6 +149,43 @@ def normalize_eval_mode(mode_raw: Any) -> str:
         allowed = ", ".join(sorted(ALLOWED_EVAL_MODES))
         raise ValueError(f"Unsupported eval mode '{mode}'. Allowed: {allowed}")
     return mode
+
+
+def normalize_eval_mode_for_device(mode_raw: Any, device: str) -> str:
+    mode = normalize_eval_mode(mode_raw)
+    if device == "cpu" and mode == "speed":
+        print("Eval mode 'speed' requested on CPU; using 'memory_safe' to reduce RAM usage.")
+        return "memory_safe"
+    return mode
+
+
+def is_cuda_available() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except ImportError:  # pragma: no cover - torch is optional outside train/eval runtime
+        return False
+
+
+def normalize_runtime_settings(device_raw: Any, dtype_raw: Any) -> tuple[str, str]:
+    device = str(device_raw or "cuda").strip().lower()
+    dtype_name = str(dtype_raw or "bf16").strip().lower()
+
+    if dtype_name not in ALLOWED_DTYPE_NAMES:
+        allowed = ", ".join(sorted(ALLOWED_DTYPE_NAMES))
+        raise ValueError(f"Unsupported dtype '{dtype_name}'. Allowed: {allowed}")
+
+    if device.startswith("cuda") and not is_cuda_available():
+        print("CUDA requested but unavailable; falling back to CPU.")
+        device = "cpu"
+
+    # SDXL eval on CPU should use fp32 for compatibility.
+    if device == "cpu" and dtype_name in {"bf16", "fp16"}:
+        print(f"{dtype_name} requested on CPU; using fp32.")
+        dtype_name = "fp32"
+
+    return device, dtype_name
 
 
 def resolve_lora_path(lora_path_raw: Any, checkpoint_subdir_raw: Any) -> str:
@@ -518,15 +556,17 @@ def main() -> None:
     lora_path = resolve_lora_path(config.get("lora_path"), config.get("checkpoint_subdir"))
     checkpoint_used = str(config.get("checkpoint_subdir") or Path(lora_path).name)
     vae_model = config.get("vae_model")
-    dtype_name = str(config.get("dtype", "bf16"))
-    device = str(config.get("device", "cuda"))
+    device, dtype_name = normalize_runtime_settings(
+        config.get("device", "cuda"),
+        config.get("dtype", "bf16"),
+    )
     width = int(config.get("width", 1024))
     height = int(config.get("height", 1024))
     steps = int(config.get("num_inference_steps", 30))
     guidance_scale = float(config.get("guidance_scale", 7.0))
     downscale_factor = int(config.get("downscale_factor", 8))
     lora_scale = float(config.get("lora_scale", 1.0))
-    eval_mode = normalize_eval_mode(config.get("eval_mode", "speed"))
+    eval_mode = normalize_eval_mode_for_device(config.get("eval_mode", "speed"), device)
     report_rows = evaluate_prompts(
         prompts=prompts,
         base_model=base_model,
@@ -552,6 +592,8 @@ def main() -> None:
     config_with_runtime = dict(config)
     config_with_runtime["eval_mode"] = eval_mode
     config_with_runtime["resolved_lora_path"] = lora_path
+    config_with_runtime["resolved_device"] = device
+    config_with_runtime["resolved_dtype"] = dtype_name
     report = {
         "created_at": timestamp_utc(),
         "config": config_with_runtime,
