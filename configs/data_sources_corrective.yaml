@@ -1,6 +1,8 @@
 sources:
   - id: topdown_shooter
-    url: https://opengameart.org/content/topdown-shooter
+    url: https://opengameart.org/sites/default/files/topdown-shooter.zip
+    fallback_urls:
+      - https://opengameart.org/content/topdown-shooter
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Large top-down sprite pool with many separate PNG assets for corrective volume.
@@ -8,7 +10,9 @@ sources:
     domain_tag: prompt_following
 
   - id: ui_pack_pixel_adventure
-    url: https://opengameart.org/content/ui-pack-pixel-adventure
+    url: https://opengameart.org/sites/default/files/kenney_ui-pack-pixel-adventure.zip
+    fallback_urls:
+      - https://opengameart.org/content/ui-pack-pixel-adventure
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Icon-heavy UI elements for crisp edge integrity and symbol-level prompt matching.
@@ -16,7 +20,9 @@ sources:
     domain_tag: pixel_integrity
 
   - id: pixel_platformer
-    url: https://opengameart.org/content/pixel-platformer-0
+    url: https://opengameart.org/sites/default/files/kenney_pixel-platformer.zip
+    fallback_urls:
+      - https://opengameart.org/content/pixel-platformer-0
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Character and environment sprites for robust action/subject prompts.
@@ -24,7 +30,9 @@ sources:
     domain_tag: prompt_following
 
   - id: tiny_battle
-    url: https://opengameart.org/content/tiny-battle
+    url: https://opengameart.org/sites/default/files/kenney_tiny-battle.zip
+    fallback_urls:
+      - https://opengameart.org/content/tiny-battle
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Combat-oriented unit sprites to reinforce pose and equipment consistency.
@@ -32,7 +40,9 @@ sources:
     domain_tag: prompt_following
 
   - id: tiny_creatures
-    url: https://opengameart.org/content/tiny-creatures
+    url: https://opengameart.org/sites/default/files/tiny-creatures.zip
+    fallback_urls:
+      - https://opengameart.org/content/tiny-creatures
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Creature variety improves shape fidelity across non-humanoid prompts.
@@ -40,7 +50,9 @@ sources:
     domain_tag: detail_readability
 
   - id: generic_items
-    url: https://opengameart.org/content/generic-items
+    url: https://opengameart.org/sites/default/files/kenney_genericItems_updatedCross.zip
+    fallback_urls:
+      - https://opengameart.org/content/generic-items
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Diverse prop sprites for object prompt-following and icon clarity.
@@ -48,7 +60,9 @@ sources:
     domain_tag: pixel_integrity
 
   - id: tiny_dungeon
-    url: https://opengameart.org/content/tiny-dungeon
+    url: https://opengameart.org/sites/default/files/kenney_tinydungeon.zip
+    fallback_urls:
+      - https://opengameart.org/content/tiny-dungeon
     license: CC0-1.0
     attribution: pixel-boy / OpenGameArt
     notes: Non-Kenney dungeon-themed sprites for better domain diversity.
@@ -56,7 +70,9 @@ sources:
     domain_tag: composition_clarity
 
   - id: pixel_shmup
-    url: https://opengameart.org/content/pixel-shmup
+    url: https://opengameart.org/sites/default/files/kenney_pixelshmup.zip
+    fallback_urls:
+      - https://opengameart.org/content/pixel-shmup
     license: CC0-1.0
     attribution: Kenney (OpenGameArt)
     notes: Effects and entities from shooter assets help silhouette and projectile detail.
