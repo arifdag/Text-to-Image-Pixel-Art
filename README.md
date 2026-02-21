@@ -6,6 +6,7 @@ Colab-first SDXL LoRA pipeline for generating crisp pixel-art sprites from text 
 - `src/pixelart/`: ingestion, cleaning, captioning, training launcher, and eval CLIs.
 - `configs/`: default config for data sources, SDXL LoRA training, and eval prompt suite.
 - `notebooks/colab_train_pixel_art.ipynb`: end-to-end Colab workflow.
+- `notebooks/colab_corrective_ckpt8000.ipynb`: targeted corrective continuation workflow.
 - `tests/`: unit tests for data cleaning + reproducibility helpers.
 - `DATA_SOURCES.md`: source/attribution register.
 
@@ -24,6 +25,15 @@ python -m pixelart.data_clean --input-dir data/raw --index-in data/raw/index.jso
 python -m pixelart.caption --index-in data/clean/index.jsonl --prefer-source-prompt
 python -m pixelart.train --config configs/train_sdxl_lora.yaml --dry-run
 python -m pixelart.eval --config configs/eval.yaml
+```
+
+Corrective continuation pipeline (checkpoint-8000 focused):
+```powershell
+python -m pixelart.data_ingest --config configs/data_sources_corrective.yaml --output-dir data/raw_corrective --index-out data/raw_corrective/index.jsonl
+python -m pixelart.data_clean --input-dir data/raw_corrective --index-in data/raw_corrective/index.jsonl --output-dir data/clean_corrective/images --index-out data/clean_corrective/index.jsonl --rejects-out data/clean_corrective/rejects.jsonl --max-source-dimension 384 --max-aspect-ratio 1.8 --reject-name-patterns "sheet,spritesheet,sprite_sheet,atlas,tilemap,tilesheet"
+python -m pixelart.caption --index-in data/clean_corrective/index.jsonl --output-dir data/train_corrective --metadata-out data/train_corrective/metadata.jsonl --prefer-source-prompt
+python -m pixelart.train --config configs/train_sdxl_lora_corrective.yaml --dry-run
+python -m pixelart.eval --config configs/eval_corrective.yaml
 ```
 
 ## Core SDXL pixel-art settings

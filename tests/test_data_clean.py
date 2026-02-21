@@ -50,3 +50,42 @@ def test_clean_dataset_rejects_duplicate(tmp_path: Path) -> None:
     assert len(kept_rows) == 1
     assert reject_rows[0]["reason"] == "duplicate"
 
+
+def test_clean_dataset_rejects_by_name_pattern(tmp_path: Path) -> None:
+    sheet = Image.new("RGB", (128, 128), (0, 255, 0))
+    sheet_path = tmp_path / "enemy_sheet.png"
+    sheet.save(sheet_path)
+
+    result = clean_dataset(
+        records=[{"file_path": sheet_path.as_posix(), "source": "x", "license": "CC0-1.0"}],
+        output_dir=tmp_path / "clean_images",
+        index_out=tmp_path / "index.jsonl",
+        rejects_out=tmp_path / "rejects.jsonl",
+        resolution=128,
+        phash_threshold=0,
+        edge_softness_threshold=1.0,
+        reject_name_patterns=["sheet"],
+    )
+    reject_rows = read_jsonl(tmp_path / "rejects.jsonl")
+    assert result.kept == 0
+    assert reject_rows[0]["reason"] == "likely_sprite_sheet_name"
+
+
+def test_clean_dataset_rejects_large_source_dimensions(tmp_path: Path) -> None:
+    img = Image.new("RGB", (512, 512), (200, 100, 50))
+    source_path = tmp_path / "large.png"
+    img.save(source_path)
+
+    result = clean_dataset(
+        records=[{"file_path": source_path.as_posix(), "source": "x", "license": "CC0-1.0"}],
+        output_dir=tmp_path / "clean_images2",
+        index_out=tmp_path / "index2.jsonl",
+        rejects_out=tmp_path / "rejects2.jsonl",
+        resolution=128,
+        phash_threshold=0,
+        edge_softness_threshold=1.0,
+        max_source_dimension=384,
+    )
+    reject_rows = read_jsonl(tmp_path / "rejects2.jsonl")
+    assert result.kept == 0
+    assert reject_rows[0]["reason"] == "source_too_large"

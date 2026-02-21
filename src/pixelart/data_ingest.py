@@ -153,6 +153,7 @@ def ingest_sources(
         source_id = slugify(str(source.get("id", "source")))
         license_name = str(source.get("license", "")).strip()
         attribution = str(source.get("attribution", "n/a")).strip()
+        domain_tag = str(source.get("domain_tag", "")).strip()
         max_files = int(source.get("max_files", 0))
 
         if not allow_non_open and not is_open_license(license_name):
@@ -179,6 +180,7 @@ def ingest_sources(
                         "source": source_id,
                         "license": license_name,
                         "attribution": attribution,
+                        "domain_tag": domain_tag,
                         "source_ref": source.get("url") or source.get("local_path", ""),
                         "ingested_at": timestamp_utc(),
                         "prompt": caption_map.get(src_path.name, ""),

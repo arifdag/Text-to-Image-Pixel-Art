@@ -42,7 +42,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resolution", type=int, default=1024)
     parser.add_argument("--phash-threshold", type=int, default=6)
     parser.add_argument("--edge-softness-threshold", type=float, default=0.55)
+    parser.add_argument("--max-source-dimension", type=int, default=0)
+    parser.add_argument("--max-aspect-ratio", type=float, default=0.0)
+    parser.add_argument(
+        "--reject-name-patterns",
+        type=str,
+        default="",
+        help="Comma-separated filename patterns (e.g. sheet,atlas) to reject early.",
+    )
     return parser.parse_args()
+
+
+def parse_name_patterns(value: str) -> list[str]:
+    return [token.strip().lower() for token in value.split(",") if token.strip()]
 
 
 def center_crop_resize_nearest(image: Image.Image, resolution: int) -> Image.Image:
@@ -99,11 +111,15 @@ def clean_dataset(
     resolution: int,
     phash_threshold: int,
     edge_softness_threshold: float,
+    max_source_dimension: int = 0,
+    max_aspect_ratio: float = 0.0,
+    reject_name_patterns: list[str] | None = None,
 ) -> CleanResult:
     ensure_dir(output_dir)
     seen_hashes: list[Any] = []
     kept_rows: list[dict[str, Any]] = []
     rejected_rows: list[dict[str, Any]] = []
+    name_patterns = [pattern.lower() for pattern in (reject_name_patterns or [])]
 
     for i, record in enumerate(records):
         image_path = Path(str(record["file_path"]))
@@ -117,8 +133,51 @@ def clean_dataset(
             )
             continue
 
+        lowered_name = image_path.name.lower()
+        matched_pattern = next((p for p in name_patterns if p in lowered_name), None)
+        if matched_pattern:
+            rejected_rows.append(
+                {
+                    **record,
+                    "reason": "likely_sprite_sheet_name",
+                    "matched_pattern": matched_pattern,
+                    "timestamp": timestamp_utc(),
+                }
+            )
+            continue
+
         try:
             with Image.open(image_path) as img:
+                width, height = img.size
+                if max_source_dimension > 0 and max(width, height) > max_source_dimension:
+                    rejected_rows.append(
+                        {
+                            **record,
+                            "reason": "source_too_large",
+                            "width": width,
+                            "height": height,
+                            "max_source_dimension": max_source_dimension,
+                            "timestamp": timestamp_utc(),
+                        }
+                    )
+                    continue
+
+                if max_aspect_ratio > 0:
+                    ratio = max(width / max(height, 1), height / max(width, 1))
+                    if ratio > max_aspect_ratio:
+                        rejected_rows.append(
+                            {
+                                **record,
+                                "reason": "extreme_aspect_ratio",
+                                "width": width,
+                                "height": height,
+                                "aspect_ratio": round(ratio, 6),
+                                "max_aspect_ratio": max_aspect_ratio,
+                                "timestamp": timestamp_utc(),
+                            }
+                        )
+                        continue
+
                 softness = edge_softness_score(img)
                 if softness > edge_softness_threshold:
                     rejected_rows.append(
@@ -189,6 +248,9 @@ def main() -> None:
         resolution=args.resolution,
         phash_threshold=args.phash_threshold,
         edge_softness_threshold=args.edge_softness_threshold,
+        max_source_dimension=args.max_source_dimension,
+        max_aspect_ratio=args.max_aspect_ratio,
+        reject_name_patterns=parse_name_patterns(args.reject_name_patterns),
     )
     print(f"Kept {result.kept} images")
     print(f"Rejected {result.rejected} images")

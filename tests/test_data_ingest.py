@@ -17,6 +17,7 @@ def test_ingest_sources_copies_images(tmp_path: Path) -> None:
                 "local_path": src_dir.as_posix(),
                 "license": "CC0-1.0",
                 "attribution": "test",
+                "domain_tag": "icon_focus",
             }
         ],
         output_dir=tmp_path / "raw",
@@ -26,6 +27,7 @@ def test_ingest_sources_copies_images(tmp_path: Path) -> None:
     assert len(records) == 1
     assert Path(records[0]["file_path"]).exists()
     assert records[0]["license"] == "CC0-1.0"
+    assert records[0]["domain_tag"] == "icon_focus"
 
 
 def test_ingest_sources_uses_caption_sidecar(tmp_path: Path) -> None:

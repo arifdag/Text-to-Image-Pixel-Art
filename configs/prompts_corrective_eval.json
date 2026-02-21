@@ -1,0 +1,155 @@
+[
+  {
+    "id": "pf_knight_strict_loadout",
+    "category": "prompt_following",
+    "prompt": "pixel art, single centered female knight, red cape, sword in right hand, shield in left hand, full body, plain background",
+    "negative_prompt": "multiple characters, sprite sheet, photorealistic, smooth gradients, anti-aliasing, blur",
+    "seeds": [1101, 1102],
+    "expected_traits": [
+      "Exactly one main knight sprite is present.",
+      "Cape is clearly red.",
+      "Sword and shield are both visible in correct hands."
+    ],
+    "failure_checks": [
+      "Missing sword or shield.",
+      "Wrong cape color.",
+      "Multiple unrelated characters appear."
+    ]
+  },
+  {
+    "id": "pf_mage_two_orbs_strict",
+    "category": "prompt_following",
+    "prompt": "pixel art, single mage sprite, purple robe, wooden staff, exactly two floating blue orbs, centered composition",
+    "negative_prompt": "extra floating objects, sprite sheet, realistic render, smooth lighting, blur",
+    "seeds": [1111, 1112],
+    "expected_traits": [
+      "Exactly two blue orbs are visible.",
+      "Mage remains single centered subject.",
+      "Purple robe and wooden staff are clear."
+    ],
+    "failure_checks": [
+      "Orb count is not exactly two.",
+      "More than one main character appears.",
+      "Staff or robe attribute is missing."
+    ]
+  },
+  {
+    "id": "pi_coin_icon_single",
+    "category": "pixel_integrity",
+    "prompt": "pixel art, single gold coin inventory icon, crisp circular silhouette, limited yellow orange palette, plain background",
+    "negative_prompt": "repeating pattern, tiled duplicates, realistic metal render, anti-aliasing, blur",
+    "seeds": [1201, 1202],
+    "expected_traits": [
+      "One dominant coin icon is present.",
+      "Edge pixels are crisp and readable.",
+      "No dense repeating icon pattern appears."
+    ],
+    "failure_checks": [
+      "Coin degenerates into repeated tiny dots.",
+      "Soft blurred edges on icon boundary.",
+      "Shape no longer reads as circular coin."
+    ]
+  },
+  {
+    "id": "pi_slime_outline_single",
+    "category": "pixel_integrity",
+    "prompt": "pixel art, single green slime monster, thick dark outline, flat interior shading, centered front view",
+    "negative_prompt": "realistic textures, soft gradients, multi-character sheet, anti-aliasing, blur",
+    "seeds": [1211, 1212],
+    "expected_traits": [
+      "Single clear slime silhouette.",
+      "Strong dark outline around body.",
+      "Flat interior shading without painterly gradients."
+    ],
+    "failure_checks": [
+      "Outline is weak or missing.",
+      "Organic soft-rendered look replaces pixel style.",
+      "Multiple tiny creatures appear."
+    ]
+  },
+  {
+    "id": "dr_potion_star_label",
+    "category": "detail_readability",
+    "prompt": "pixel art, single mana potion icon, blue liquid bottle, star emblem on front label, cork top, centered",
+    "negative_prompt": "sprite sheet, photoreal glass, soft reflections, blur, anti-aliasing",
+    "seeds": [1301, 1302],
+    "expected_traits": [
+      "Star label emblem remains visible after downscale.",
+      "Bottle contour is clean and readable.",
+      "Cork top remains identifiable."
+    ],
+    "failure_checks": [
+      "Star label disappears.",
+      "Bottle edge turns muddy.",
+      "Tiny duplicated bottle elements appear."
+    ]
+  },
+  {
+    "id": "dr_mech_core_cannons",
+    "category": "detail_readability",
+    "prompt": "pixel art, single mech enemy, glowing chest core, two arm cannons, front view, crisp edges, plain backdrop",
+    "negative_prompt": "crowded sprite sheet, realistic metal rendering, blur, smooth gradient lighting",
+    "seeds": [1311, 1312],
+    "expected_traits": [
+      "Single mech is dominant subject.",
+      "Chest core is visually distinct.",
+      "Both arm cannons are readable."
+    ],
+    "failure_checks": [
+      "Multiple unrelated mechs appear.",
+      "Core merges into torso.",
+      "Cannons lose clear separation."
+    ]
+  },
+  {
+    "id": "cc_market_scene_focus",
+    "category": "composition_clarity",
+    "prompt": "pixel art village market scene, one foreground merchant stall, two background houses, clear path leading to stall, warm light",
+    "negative_prompt": "noisy clutter, photorealism, depth of field blur, anti-aliased smooth rendering",
+    "seeds": [1401, 1402],
+    "expected_traits": [
+      "Foreground stall reads as primary focal point.",
+      "Background houses stay secondary.",
+      "Path direction is visually coherent."
+    ],
+    "failure_checks": [
+      "Foreground/background separation collapses.",
+      "Scene becomes noisy and flat.",
+      "Focal point drifts away from stall."
+    ]
+  },
+  {
+    "id": "cc_party_lineup_strict_three",
+    "category": "composition_clarity",
+    "prompt": "pixel art, exactly three characters lineup, warrior center, mage left, healer right, equal scale, plain background",
+    "negative_prompt": "crowd, sprite sheet, dozens of small sprites, realistic render, blur",
+    "seeds": [1411, 1412],
+    "expected_traits": [
+      "Exactly three characters are present.",
+      "Warrior remains centered.",
+      "Characters are separated with readable spacing."
+    ],
+    "failure_checks": [
+      "Many extra sprites appear (sheet-like output).",
+      "Role positions are swapped or unclear.",
+      "Scale/spacing differs heavily between subjects."
+    ]
+  },
+  {
+    "id": "pi_tree_tile_topdown",
+    "category": "pixel_integrity",
+    "prompt": "pixel art top-down tree tile, single tile object, clear canopy and trunk separation, crisp hard edges",
+    "negative_prompt": "isometric scene, multi-tile collage, soft gradients, anti-aliasing, blur",
+    "seeds": [1221, 1222],
+    "expected_traits": [
+      "Top-down perspective is preserved.",
+      "Canopy and trunk remain separable.",
+      "Single tile object is dominant."
+    ],
+    "failure_checks": [
+      "Perspective drifts away from top-down.",
+      "Tree becomes multi-object collage.",
+      "Soft blended edges replace pixel hardness."
+    ]
+  }
+]

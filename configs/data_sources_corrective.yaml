@@ -1,0 +1,88 @@
+sources:
+  - id: kenney_character_pack_1
+    url: https://lpc.opengameart.org/sites/default/files/Kenney_characterPack_1.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Character sprites with clear gear/pose variation for prompt-following repairs.
+    max_files: 450
+    domain_tag: prompt_following
+
+  - id: kenney_emotes_pack
+    url: https://lpc.opengameart.org/sites/default/files/Kenney_emotesPack.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Small expressive sprite assets to improve single-subject consistency.
+    max_files: 300
+    domain_tag: prompt_following
+
+  - id: kenney_animal_pack
+    url: https://lpc.opengameart.org/sites/default/files/kenney-animalpack.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Non-humanoid sprite coverage for count/shape adherence.
+    max_files: 140
+    domain_tag: prompt_following
+
+  - id: kenney_game_icons
+    url: https://lpc.opengameart.org/sites/default/files/Kenney_gameIcons.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Icon-focused corrective signal for crisp edges and silhouette fidelity.
+    max_files: 200
+    domain_tag: pixel_integrity
+
+  - id: kenney_tiny_town
+    url: https://opengameart.org/sites/default/files/kenney_tiny-town.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Top-down environment assets to stabilize composition layouts.
+    max_files: 280
+    domain_tag: composition_clarity
+
+  - id: kenney_foliage_pack
+    url: https://opengameart.org/sites/default/files/FoliagePack_kenney.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Tree/foliage tiles and props for top-down tile integrity.
+    max_files: 220
+    domain_tag: pixel_integrity
+
+  - id: kenney_hexagon_pack
+    url: https://opengameart.org/sites/default/files/hexagon-pack_kenney.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Structured layout pieces for scene composition clarity.
+    max_files: 260
+    domain_tag: composition_clarity
+
+  - id: kenney_cursor_pixel_pack
+    url: https://opengameart.org/sites/default/files/Cursor_pixel_pack_kenney.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Small pixel-precise motifs useful for anti-blur correction.
+    max_files: 160
+    domain_tag: pixel_integrity
+
+  - id: kenney_pixel_car_pack
+    url: https://opengameart.org/sites/default/files/pixelCarPack_kenney.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Strong silhouette and orientation signal for subject integrity.
+    max_files: 100
+    domain_tag: detail_readability
+
+  - id: kenney_voxel_pack_updated
+    url: https://opengameart.org/sites/default/files/Voxel_Pack_updated.zip
+    license: CC0-1.0
+    attribution: Kenney (OpenGameArt mirror)
+    notes: Broad object variety for robust scene/entity composition.
+    max_files: 320
+    domain_tag: composition_clarity
+
+  - id: oga_open_tileset
+    url: https://opengameart.org/sites/default/files/open_tileset.png
+    license: CC0-1.0
+    attribution: Russpuppy / OpenGameArt
+    notes: Non-Kenney CC0 tile reference for visual domain diversity.
+    max_files: 70
+    domain_tag: pixel_integrity
