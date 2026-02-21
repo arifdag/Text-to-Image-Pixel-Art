@@ -1,6 +1,9 @@
 sources:
   - id: kenney_character_pack_1
-    url: https://lpc.opengameart.org/sites/default/files/Kenney_characterPack_1.zip
+    url: https://opengameart.org/sites/default/files/Kenney_characterPack_1.zip
+    fallback_urls:
+      - https://opengameart.org/content/kenney-character-pack-redux
+      - https://opengameart.org/content/kenney-character-pack-1
     license: CC0-1.0
     attribution: Kenney (OpenGameArt mirror)
     notes: Character sprites with clear gear/pose variation for prompt-following repairs.
@@ -8,7 +11,9 @@ sources:
     domain_tag: prompt_following
 
   - id: kenney_emotes_pack
-    url: https://lpc.opengameart.org/sites/default/files/Kenney_emotesPack.zip
+    url: https://opengameart.org/sites/default/files/Kenney_emotesPack.zip
+    fallback_urls:
+      - https://opengameart.org/content/kenney-emotes-pack
     license: CC0-1.0
     attribution: Kenney (OpenGameArt mirror)
     notes: Small expressive sprite assets to improve single-subject consistency.
@@ -16,7 +21,10 @@ sources:
     domain_tag: prompt_following
 
   - id: kenney_animal_pack
-    url: https://lpc.opengameart.org/sites/default/files/kenney-animalpack.zip
+    url: https://opengameart.org/sites/default/files/kenney-animalpack.zip
+    fallback_urls:
+      - https://opengameart.org/content/kenney-animal-pack
+      - https://opengameart.org/content/kenney-animal-pack-redux
     license: CC0-1.0
     attribution: Kenney (OpenGameArt mirror)
     notes: Non-humanoid sprite coverage for count/shape adherence.
@@ -24,7 +32,9 @@ sources:
     domain_tag: prompt_following
 
   - id: kenney_game_icons
-    url: https://lpc.opengameart.org/sites/default/files/Kenney_gameIcons.zip
+    url: https://opengameart.org/sites/default/files/Kenney_gameIcons.zip
+    fallback_urls:
+      - https://opengameart.org/content/kenney-game-icons
     license: CC0-1.0
     attribution: Kenney (OpenGameArt mirror)
     notes: Icon-focused corrective signal for crisp edges and silhouette fidelity.

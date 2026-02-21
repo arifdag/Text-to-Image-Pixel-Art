@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import shutil
 import urllib.parse
 import urllib.request
@@ -19,6 +20,9 @@ try:
 except ImportError:  # pragma: no cover - handled at runtime if YAML is used
     yaml = None
 
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"}
+HTML_LIKE_SUFFIXES = {"", ".html", ".htm", ".php", ".asp", ".aspx"}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Ingest image sources and build a raw index.")
@@ -27,6 +31,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--index-out", type=Path, default=Path("data/raw/index.jsonl"))
     parser.add_argument("--registry-path", type=Path, default=Path("DATA_SOURCES.md"))
     parser.add_argument("--allow-non-open", action="store_true")
+    parser.add_argument(
+        "--skip-failed-sources",
+        action="store_true",
+        help="Continue ingest even if one or more sources fail to download.",
+    )
     return parser.parse_args()
 
 
@@ -50,10 +59,115 @@ def extract_archive(archive_path: Path, target_dir: Path) -> list[Path]:
     return list_image_files(target_dir)
 
 
-def download_to(url: str, destination: Path) -> Path:
+def download_to(url: str, destination: Path, timeout: int = 60) -> tuple[Path, str]:
     ensure_dir(destination.parent)
-    urllib.request.urlretrieve(url, destination)
-    return destination
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        destination.write_bytes(response.read())
+        content_type = str(response.headers.get("Content-Type", ""))
+    return destination, content_type
+
+
+def extract_download_urls_from_html(html: str, page_url: str) -> list[str]:
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html, flags=re.IGNORECASE)
+    candidates: list[str] = []
+    for href in hrefs:
+        absolute = urllib.parse.urljoin(page_url, href.strip())
+        path = urllib.parse.urlparse(absolute).path.lower()
+        if path.endswith(".zip") or any(path.endswith(ext) for ext in IMAGE_EXTENSIONS):
+            candidates.append(absolute)
+
+    preferred: list[str] = []
+    others: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        path = urllib.parse.urlparse(candidate).path.lower()
+        if "/sites/default/files/" in path:
+            preferred.append(candidate)
+        else:
+            others.append(candidate)
+    return preferred + others
+
+
+def dedupe_urls(urls: list[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for url in urls:
+        normalized = str(url).strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return ordered
+
+
+def derive_mirror_urls(url: str) -> list[str]:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.netloc == "lpc.opengameart.org":
+        return [parsed._replace(netloc="opengameart.org").geturl()]
+    if parsed.netloc == "opengameart.org":
+        return [parsed._replace(netloc="lpc.opengameart.org").geturl()]
+    return []
+
+
+def resolve_url_source(url: str, workspace_tmp: Path, fallback_urls: list[str] | None = None) -> list[Path]:
+    seed_urls = [url]
+    if fallback_urls:
+        seed_urls.extend(fallback_urls)
+    mirror_urls: list[str] = []
+    for candidate in seed_urls:
+        mirror_urls.extend(derive_mirror_urls(candidate))
+    candidate_urls = dedupe_urls(seed_urls + mirror_urls)
+
+    errors: list[str] = []
+    for candidate_url in candidate_urls:
+        parsed = urllib.parse.urlparse(candidate_url)
+        filename = Path(parsed.path).name or "downloaded_source"
+
+        try:
+            downloaded_path, content_type = download_to(candidate_url, workspace_tmp / filename)
+        except Exception as exc:
+            errors.append(f"{candidate_url} -> {type(exc).__name__}: {exc}")
+            continue
+
+        if zipfile.is_zipfile(downloaded_path):
+            return extract_archive(downloaded_path, workspace_tmp / "extracted")
+        if downloaded_path.suffix.lower() in IMAGE_EXTENSIONS:
+            return [downloaded_path]
+
+        page_suffix = downloaded_path.suffix.lower()
+        is_html_like = "html" in content_type.lower() or page_suffix in HTML_LIKE_SUFFIXES
+        if not is_html_like:
+            errors.append(f"{candidate_url} -> unsupported content type '{content_type or page_suffix}'")
+            continue
+
+        html = downloaded_path.read_text(encoding="utf-8", errors="ignore")
+        asset_links = extract_download_urls_from_html(html, candidate_url)
+        if not asset_links:
+            errors.append(f"{candidate_url} -> no downloadable asset links found")
+            continue
+
+        for asset_url in asset_links:
+            asset_name = Path(urllib.parse.urlparse(asset_url).path).name or "asset_download"
+            try:
+                asset_path, _ = download_to(asset_url, workspace_tmp / asset_name)
+            except Exception:
+                continue
+            if zipfile.is_zipfile(asset_path):
+                return extract_archive(asset_path, workspace_tmp / "extracted")
+            if asset_path.suffix.lower() in IMAGE_EXTENSIONS:
+                return [asset_path]
+        errors.append(f"{candidate_url} -> asset links resolved but none downloaded successfully")
+
+    details = "; ".join(errors[:3])
+    if len(errors) > 3:
+        details = f"{details}; ... {len(errors) - 3} more attempts"
+    raise ValueError(
+        f"Could not resolve downloadable image/archive from source URL: {url}"
+        + (f" ({details})" if details else "")
+    )
 
 
 def resolve_source_images(source: dict[str, Any], workspace_tmp: Path) -> list[Path]:
@@ -67,17 +181,16 @@ def resolve_source_images(source: dict[str, Any], workspace_tmp: Path) -> list[P
             return list_image_files(path)
         if zipfile.is_zipfile(path):
             return extract_archive(path, workspace_tmp / "extracted")
-        return [path] if path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".bmp"} else []
+        return [path] if path.suffix.lower() in IMAGE_EXTENSIONS else []
     if url:
-        filename = Path(urllib.parse.urlparse(url).path).name or "downloaded_source"
-        downloaded_path = download_to(url, workspace_tmp / filename)
-        if zipfile.is_zipfile(downloaded_path):
-            return extract_archive(downloaded_path, workspace_tmp / "extracted")
-        return (
-            [downloaded_path]
-            if downloaded_path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
-            else []
-        )
+        fallback_urls_raw = source.get("fallback_urls", [])
+        if isinstance(fallback_urls_raw, list):
+            fallback_urls = [str(item).strip() for item in fallback_urls_raw if str(item).strip()]
+        elif fallback_urls_raw:
+            fallback_urls = [str(fallback_urls_raw).strip()]
+        else:
+            fallback_urls = []
+        return resolve_url_source(str(url), workspace_tmp, fallback_urls=fallback_urls)
     raise ValueError("Each source entry needs either 'local_path' or 'url'.")
 
 
@@ -147,6 +260,7 @@ def ingest_sources(
     sources: list[dict[str, Any]],
     output_dir: Path,
     allow_non_open: bool,
+    skip_failed_sources: bool = False,
 ) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for source in sources:
@@ -165,7 +279,13 @@ def ingest_sources(
         source_output_dir = ensure_dir(output_dir / source_id)
         caption_map = load_caption_map(source)
         with TemporaryDirectory(prefix=f"ingest_{source_id}_") as tmp:
-            resolved_images = resolve_source_images(source, Path(tmp))
+            try:
+                resolved_images = resolve_source_images(source, Path(tmp))
+            except Exception as exc:
+                if skip_failed_sources:
+                    print(f"[WARN] Skipping source '{source_id}' due to ingest error: {exc}")
+                    continue
+                raise RuntimeError(f"Failed to ingest source '{source_id}': {exc}") from exc
             if max_files > 0:
                 resolved_images = resolved_images[:max_files]
 
@@ -201,6 +321,7 @@ def main() -> None:
         sources=sources,
         output_dir=args.output_dir,
         allow_non_open=args.allow_non_open,
+        skip_failed_sources=args.skip_failed_sources,
     )
     write_jsonl(args.index_out, records)
     append_registry_rows(args.registry_path, sources)
