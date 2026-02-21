@@ -1,0 +1,207 @@
+[
+  {
+    "id": "pf_knight_red_cape",
+    "category": "prompt_following",
+    "prompt": "pixel art, female knight sprite, full body front view, red cape, silver sword in right hand, round shield in left hand, white background, 16-bit style",
+    "negative_prompt": "3d render, photorealistic, smooth shading, soft gradients, anti-aliasing, blurry",
+    "seeds": [101, 102],
+    "expected_traits": [
+      "Red cape is visible.",
+      "Sword appears in right hand.",
+      "Shield appears in left hand.",
+      "Full body sprite is centered."
+    ],
+    "failure_checks": [
+      "Wrong cape color.",
+      "Hands swap items or missing item.",
+      "Body is cropped or off center."
+    ]
+  },
+  {
+    "id": "pf_mage_two_orbs",
+    "category": "prompt_following",
+    "prompt": "pixel art, young mage sprite, purple robe, holding a wooden staff, two floating blue magic orbs above shoulders, plain background, retro RPG style",
+    "negative_prompt": "realistic skin, 3d, smooth gradients, painterly brush strokes, anti-aliasing",
+    "seeds": [111, 112],
+    "expected_traits": [
+      "Purple robe is clear.",
+      "Wooden staff is present.",
+      "Exactly two blue orbs are visible."
+    ],
+    "failure_checks": [
+      "Missing or extra orbs.",
+      "Robe not purple.",
+      "Staff missing or replaced by other prop."
+    ]
+  },
+  {
+    "id": "pf_shop_sign_cat",
+    "category": "prompt_following",
+    "prompt": "pixel art shop sign icon, wooden hanging sign with a simple cat face emblem, gold trim border, transparent background style, RPG inventory icon",
+    "negative_prompt": "photo, realistic wood grain, 3d render, glossy reflections, blur",
+    "seeds": [121, 122],
+    "expected_traits": [
+      "Cat face emblem is visible.",
+      "Gold trim border surrounds sign.",
+      "Icon reads as a hanging wooden sign."
+    ],
+    "failure_checks": [
+      "No cat emblem.",
+      "Border color drifts from gold.",
+      "Shape no longer reads as sign icon."
+    ]
+  },
+  {
+    "id": "pi_slime_outline",
+    "category": "pixel_integrity",
+    "prompt": "pixel art green slime enemy sprite, thick dark outline, flat cel shaded interior, front view, simple background",
+    "negative_prompt": "smooth shading, anti-aliased edges, realistic texture, blur, airbrush style",
+    "seeds": [201, 202],
+    "expected_traits": [
+      "Single clean silhouette.",
+      "Strong dark outline around slime.",
+      "No anti-aliased edge smoothing."
+    ],
+    "failure_checks": [
+      "Jagged noisy contour breaks.",
+      "Gradient-heavy interior.",
+      "Edge softening or blur."
+    ]
+  },
+  {
+    "id": "pi_coin_icon",
+    "category": "pixel_integrity",
+    "prompt": "pixel art gold coin inventory icon, crisp circular silhouette, minimal palette of yellow and orange shades, centered on plain background",
+    "negative_prompt": "photoreal metal reflections, smooth gradients, anti-aliasing, 3d lighting",
+    "seeds": [211, 212],
+    "expected_traits": [
+      "Clean circular icon silhouette.",
+      "Palette remains tightly limited.",
+      "Edges are crisp at pixel level."
+    ],
+    "failure_checks": [
+      "Too many intermediate colors.",
+      "Soft or blurry edge pixels.",
+      "Shape deformation from circle."
+    ]
+  },
+  {
+    "id": "pi_tree_tileset",
+    "category": "pixel_integrity",
+    "prompt": "pixel art tree tile, top-down RPG tileset style, readable canopy cluster, dark trunk center, strict hard edges, no background clutter",
+    "negative_prompt": "watercolor, smooth blending, high-frequency photo texture, anti-aliasing, blur",
+    "seeds": [221, 222],
+    "expected_traits": [
+      "Tile reads clearly from top down perspective.",
+      "Canopy and trunk are separated shapes.",
+      "Hard-edge pixel treatment is preserved."
+    ],
+    "failure_checks": [
+      "Perspective drifts from top down.",
+      "Canopy and trunk merge into noise.",
+      "Soft blended transitions."
+    ]
+  },
+  {
+    "id": "dr_archer_face",
+    "category": "detail_readability",
+    "prompt": "pixel art archer character sprite, hooded ranger with visible eyes, quiver on back, full body, designed to stay readable when downscaled to 128 by 128",
+    "negative_prompt": "overly detailed realism, noisy texture, blur, anti-aliasing, painterly style",
+    "seeds": [301, 302],
+    "expected_traits": [
+      "Face area still reads with eyes at 128px.",
+      "Quiver remains recognizable.",
+      "Pose remains distinct from silhouette."
+    ],
+    "failure_checks": [
+      "Facial features collapse at downscale.",
+      "Quiver becomes indistinct blob.",
+      "Key silhouette details disappear."
+    ]
+  },
+  {
+    "id": "dr_potion_label",
+    "category": "detail_readability",
+    "prompt": "pixel art mana potion icon, blue liquid bottle, small star emblem on label, cork stopper, icon must remain readable after nearest-neighbor downscale",
+    "negative_prompt": "real glass refraction, smooth reflections, 3d render, blurry edges, anti-aliasing",
+    "seeds": [311, 312],
+    "expected_traits": [
+      "Bottle shape stays clear at 128px.",
+      "Star label emblem remains visible.",
+      "Cork stopper is still identifiable."
+    ],
+    "failure_checks": [
+      "Star emblem vanishes.",
+      "Bottle contour becomes muddy.",
+      "Top stopper detail is lost."
+    ]
+  },
+  {
+    "id": "dr_mech_details",
+    "category": "detail_readability",
+    "prompt": "pixel art mech enemy sprite, broad shoulders, glowing chest core, two arm cannons, front view, clean retro style with readable key details",
+    "negative_prompt": "photoreal metal, smooth gradients, motion blur, anti-aliasing",
+    "seeds": [321, 322],
+    "expected_traits": [
+      "Chest core remains visually distinct.",
+      "Both arm cannons are readable.",
+      "Major armor plates are separable."
+    ],
+    "failure_checks": [
+      "Core effect smears into torso.",
+      "Cannons merge with arms.",
+      "Armor boundaries disappear at downscale."
+    ]
+  },
+  {
+    "id": "cc_boss_arena",
+    "category": "composition_clarity",
+    "prompt": "pixel art boss arena scene, large stone golem centered, four small pillars in corners, lava cracks on floor, clear focal hierarchy, retro RPG battle map",
+    "negative_prompt": "photo realism, cinematic blur, soft gradients, cluttered background, anti-aliasing",
+    "seeds": [401, 402],
+    "expected_traits": [
+      "Golem is dominant central focal point.",
+      "Corner pillars do not compete with focal point.",
+      "Lava cracks support layout without clutter."
+    ],
+    "failure_checks": [
+      "Focal point drifts away from center.",
+      "Corner props overpower main subject.",
+      "Scene becomes visually noisy."
+    ]
+  },
+  {
+    "id": "cc_market_scene",
+    "category": "composition_clarity",
+    "prompt": "pixel art village market scene, one merchant stall in foreground, two background houses, cobblestone path leading to stall, warm afternoon light, 16-bit style",
+    "negative_prompt": "modern photo, depth-of-field blur, smooth shading, high texture noise, anti-aliasing",
+    "seeds": [411, 412],
+    "expected_traits": [
+      "Foreground stall reads first.",
+      "Path direction leads eye toward stall.",
+      "Background houses remain secondary."
+    ],
+    "failure_checks": [
+      "No clear foreground-background separation.",
+      "Path does not guide composition.",
+      "Background dominates scene."
+    ]
+  },
+  {
+    "id": "cc_party_lineup",
+    "category": "composition_clarity",
+    "prompt": "pixel art party lineup, warrior in center, mage on left, healer on right, all full body sprites with equal scale and spacing, plain backdrop",
+    "negative_prompt": "3d perspective distortion, realistic rendering, blur, anti-aliasing, painterly detail",
+    "seeds": [421, 422],
+    "expected_traits": [
+      "Three characters are clearly separated.",
+      "Warrior is centered as anchor.",
+      "Left and right roles stay in correct positions."
+    ],
+    "failure_checks": [
+      "Character overlap hurts readability.",
+      "Center anchor is missing or off-center.",
+      "Role positions swap left-right."
+    ]
+  }
+]

@@ -33,6 +33,7 @@ python -m pixelart.eval --config configs/eval.yaml
 - Keep SDXL refiner off for pixel integrity.
 
 ## Reproducibility and acceptance
-- Prompt suite + fixed seeds are in `configs/prompts_v1.json`.
+- Prompt benchmark suite + fixed seeds are in `configs/prompts_v2.json`.
 - Eval outputs save baseline vs LoRA side-by-side grids in `artifacts/eval/grids/`.
+- Eval supports `eval_mode: speed|memory_safe` in `configs/eval.yaml`.
 - Training launcher writes `run_manifest.json` to output dir.
