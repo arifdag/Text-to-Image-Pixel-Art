@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -86,6 +87,45 @@ def find_latest_checkpoint(output_dir: Path) -> str | None:
     return latest.name
 
 
+def prepare_resume_checkpoint(config: dict[str, Any]) -> dict[str, Any]:
+    resume_raw = str(config.get("resume_from_checkpoint", "")).strip()
+    if not resume_raw or resume_raw.lower() == "latest":
+        return config
+
+    resume_path = Path(resume_raw).expanduser()
+    output_dir = Path(str(config["output_dir"])).expanduser()
+
+    # Simple checkpoint names are already what the diffusers script expects.
+    if resume_path == Path(resume_path.name) and resume_path.name.startswith("checkpoint-"):
+        return config
+
+    if not resume_path.is_absolute():
+        resume_path = (Path.cwd() / resume_path).resolve()
+
+    if not resume_path.exists():
+        raise FileNotFoundError(f"resume_from_checkpoint path does not exist: {resume_path}")
+    if not resume_path.is_dir():
+        raise ValueError(f"resume_from_checkpoint must point to a checkpoint directory: {resume_path}")
+    if not resume_path.name.startswith("checkpoint-"):
+        raise ValueError(
+            "resume_from_checkpoint path must end with a checkpoint-* directory: "
+            f"{resume_path}"
+        )
+
+    target = output_dir / resume_path.name
+    if resume_path.resolve() != target.resolve():
+        ensure_dir(output_dir)
+        if not target.exists():
+            print(f"Staging resume checkpoint: {resume_path} -> {target}")
+            shutil.copytree(resume_path, target)
+        else:
+            print(f"Using existing staged checkpoint: {target}")
+
+    updated = dict(config)
+    updated["resume_from_checkpoint"] = resume_path.name
+    return updated
+
+
 def build_command(config: dict[str, Any]) -> list[str]:
     train_script = str(config.get("train_script", "train_text_to_image_lora_sdxl.py"))
     command = ["accelerate", "launch", train_script]
@@ -131,6 +171,7 @@ def write_manifest(output_dir: Path, config: dict[str, Any], command: list[str])
 def main() -> None:
     args = parse_args()
     config = load_config(args.config)
+    config = prepare_resume_checkpoint(config)
     train_data_dir = Path(str(config.get("train_data_dir", "")))
     if not train_data_dir.exists():
         raise FileNotFoundError(
